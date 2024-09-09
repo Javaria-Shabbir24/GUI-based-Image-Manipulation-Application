@@ -1,22 +1,38 @@
-# GUI based image manipulation application
-#library for creating GUI apps
-import tkinter as tk 
-# for file selections dialogs and pop-up messages
-from tkinter import filedialog, messagebox ,ttk
-# for working with images
-from PIL import Image, ImageTk, ImageOps
-import os
+import tkinter as tk
+from tkinter import filedialog, messagebox, ttk
+from PIL import Image, ImageTk
 import io
 
-img = None #loaded image
-threshold = 128 #default threshold
+img = None  # loaded image
+threshold = 128  # default threshold
+
 root = tk.Tk()
 root.title("Image Manipulation Application")
-root.geometry("400x300")  #window size fixed
-format_var = tk.StringVar(value="jpg")# to hold the value of selected format
+root.geometry("600x600")  # window size fixed
+
+# Create a Canvas and a vertical scrollbar
+canvas = tk.Canvas(root)
+scrollbar = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
+
+# Create a Frame to hold the content
+content_frame = tk.Frame(canvas)
+
+# Add the Frame to the Canvas
+canvas.create_window((0, 0), window=content_frame, anchor="nw")
+canvas.configure(yscrollcommand=scrollbar.set)
+
+# Pack the Canvas and Scrollbar
+canvas.pack(side="left", fill="both", expand=True)
+scrollbar.pack(side="right", fill="y")
+
+# Update the Scrollregion whenever the content changes
+def update_scrollregion(event):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+canvas.bind("<Configure>", update_scrollregion)
 
 # function to load an image
-def Load_Image(): 
+def Load_Image():
     global img
     file_path = filedialog.askopenfilename()
     if file_path:
@@ -33,8 +49,7 @@ def save_image():
         messagebox.showerror("Error", "No format selected!")
         return
     
-    # Ask the user where to save the file
-    file_path = filedialog.asksaveasfilename(defaultextension=f".{format_var.get()}", filetypes=[("Image Files", {format_var.get()})])
+    file_path = filedialog.asksaveasfilename(defaultextension=f".{format_var.get()}", filetypes=[("Image Files", format_var.get())])
     if file_path:
         try:
             img.save(file_path, format=format_var.get().upper())
@@ -49,21 +64,17 @@ def show_image_info():
         messagebox.showerror("Error", "No image loaded to display information!")
         return
 
-    # Get image details
     width, height = img.size
     format = img.format
-    original_size = img.tobytes()  # Converting image to bytes
-    original_file_size = len(original_size)  # Size in bytes
+    original_size = img.tobytes()
+    original_file_size = len(original_size)
 
-    # Image temporarily saved to get compressed size
-    with io.BytesIO() as temp_file: #enables working with binary data without creating actual file on hard disk
+    with io.BytesIO() as temp_file:
         img.save(temp_file, format=format)
-        compressed_size = len(temp_file.getvalue())  # Compressed size in bytes
+        compressed_size = len(temp_file.getvalue())
 
-    # Calculation of compression ratio
     compression_ratio = (compressed_size / original_file_size) if original_file_size > 0 else 0
 
-    # Display image details
     info = (
         f"Width: {width}px\n"
         f"Height: {height}px\n"
@@ -74,7 +85,6 @@ def show_image_info():
     )
     messagebox.showinfo("Image Info", info)
 
-
 # Function to convert grayscale image to black and white
 def convert_to_black_and_white():
     global img
@@ -82,45 +92,80 @@ def convert_to_black_and_white():
         messagebox.showerror("Error", "No image loaded to convert!")
         return
 
-    # Applying threshold to convert grayscale to black and white
-    bw_image = img.point(lambda p: 255 if p > threshold else 0) # if pixel value less than or equal to the threshold then mapped to  white else black
-    bw_image.show()  # Show the black and white image
+    bw_image = img.point(lambda p: 255 if p > threshold else 0)
+    bw_image.show()
+
+# Function to crop the image
+def crop_image():
+    global img
+    if img is None:
+        messagebox.showerror("Error", "No image loaded to crop!")
+        return
+
+    try:
+        left = int(left_entry.get())
+        top = int(top_entry.get())
+        right = int(right_entry.get())
+        bottom = int(bottom_entry.get())
+        
+        # Check if the coordinates are valid
+        if left < 0 or top < 0 or right > img.width or bottom > img.height or left >= right or top >= bottom:
+            messagebox.showerror("Error", "Invalid crop coordinates!")
+            return
+        
+        # Perform the cropping
+        cropped_image = img.crop((left, top, right, bottom))
+        cropped_image.show()
+        
+        # Show success message with crop details
+        cropped_width, cropped_height = cropped_image.size
+        status_message = (f"Image cropped successfully!\n"
+                          f"Cropping Coordinates: (left={left}, top={top}, right={right}, bottom={bottom})\n"
+                          f"Cropped Image Size: {cropped_width}px x {cropped_height}px")
+        messagebox.showinfo("Crop Status", status_message)
+        
+    except ValueError:
+        messagebox.showerror("Error", "Invalid crop coordinates!")
+
+
+# UI elements in the content frame
 
 # Heading for browsing
-heading_label = tk.Label(root, text="Click to browse the images", font=("Arial", 14))
-heading_label.pack(pady=20)  # vertical padding
+heading_label = tk.Label(content_frame, text="Click to browse the images", font=("Arial", 14))
+heading_label.pack(pady=20)
 
 # Create the browse button
-browse_button = tk.Button(root, text="Browse", command=Load_Image)
-browse_button.pack()  
+browse_button = tk.Button(content_frame, text="Browse", command=Load_Image)
+browse_button.pack()
 
 # label for the dropdown
-format_label = tk.Label(root, text="Select format to save the image:")
+format_label = tk.Label(content_frame, text="Select format to save the image:")
 format_label.pack(pady=10)
 
 # Dropdown list for formats
-format_dropdown = ttk.Combobox(root, textvariable=format_var, values=["jpg", "png", "bmp", "tiff"], state="readonly")
+format_var = tk.StringVar(value="jpg")
+format_dropdown = ttk.Combobox(content_frame, textvariable=format_var, values=["jpg", "png", "bmp", "tiff"], state="readonly")
 format_dropdown.pack(pady=5)
 
-#save button to save the image in selected format
-save_button = tk.Button(root, text="Save Image", command=save_image)
-save_button.pack(pady=20)  # Vertical padding
+# Save button to save the image in selected format
+save_button = tk.Button(content_frame, text="Save Image", command=save_image)
+save_button.pack(pady=20)
 
 # label for the Image Info button
-format_label = tk.Label(root, text="Click to find the information of the selected image:")
-format_label.pack(pady=10)
+ImageInfo_label = tk.Label(content_frame, text="Click to find the information of the selected image:")
+ImageInfo_label.pack(pady=10)
 
 # Image Info button
-info_button = tk.Button(root, text="Image Info", command=show_image_info)
-info_button.pack(pady=20)  # Vertical padding
+info_button = tk.Button(content_frame, text="Image Info", command=show_image_info)
+info_button.pack(pady=20)
 
 # label for the conversion to black and white image
-format_label = tk.Label(root, text="Click to convert selected grayscale image to black and white:")
-format_label.pack(pady=10)
+conversion_label = tk.Label(content_frame, text="Click to convert selected grayscale image to black and white:")
+conversion_label.pack(pady=10)
 
 # Slider to adjust threshold
-threshold_slider = tk.Scale(root, from_=0, to=255, orient=tk.HORIZONTAL, label="Threshold")
-threshold_slider.set(threshold)  # Set default value
+threshold_slider = tk.Scale(content_frame, from_=0, to=255, orient=tk.HORIZONTAL, label="Threshold")
+threshold_slider.set(threshold)
 threshold_slider.pack(pady=10)
 
 def update_threshold(value):
@@ -129,7 +174,35 @@ def update_threshold(value):
 
 threshold_slider.bind("<Motion>", lambda event: update_threshold(threshold_slider.get()))
 
-convert_button = tk.Button(root, text="Convert to Black and White", command=convert_to_black_and_white)
+convert_button = tk.Button(content_frame, text="Convert to Black and White", command=convert_to_black_and_white)
 convert_button.pack(pady=20)
+
+# Label and entry fields for cropping
+crop_label = tk.Label(content_frame, text="Crop Image (left, top, right, bottom):")
+crop_label.pack(pady=10)
+
+left_label = tk.Label(content_frame, text="Left:")
+left_label.pack()
+left_entry = tk.Entry(content_frame)
+left_entry.pack()
+
+top_label = tk.Label(content_frame, text="Top:")
+top_label.pack()
+top_entry = tk.Entry(content_frame)
+top_entry.pack()
+
+right_label = tk.Label(content_frame, text="Right:")
+right_label.pack()
+right_entry = tk.Entry(content_frame)
+right_entry.pack()
+
+bottom_label = tk.Label(content_frame, text="Bottom:")
+bottom_label.pack()
+bottom_entry = tk.Entry(content_frame)
+bottom_entry.pack()
+
+# Crop button
+crop_button = tk.Button(content_frame, text="Crop Image", command=crop_image)
+crop_button.pack(pady=20)
 
 root.mainloop()
