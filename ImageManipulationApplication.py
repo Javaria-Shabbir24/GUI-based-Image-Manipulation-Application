@@ -161,6 +161,52 @@ def flip_vertical():
     flipped_image = img.transpose(Image.FLIP_TOP_BOTTOM)
     flipped_image.show()
 
+#function to combine images side by side 
+def combine_side_by_side():
+    global img
+    if img is None:
+        messagebox.showerror("Error", "No image loaded to combine!")
+        return
+
+    # Load second image
+    file_path = filedialog.askopenfilename()
+    if not file_path:
+        return
+    
+    img2 = Image.open(file_path)
+    
+    # Resize second image to match the height of the first image
+    img2 = img2.resize((img2.width, img.height))
+    
+    # Combine images side-by-side
+    combined_width = img.width + img2.width
+    combined_image = Image.new('RGB', (combined_width, img.height))
+    combined_image.paste(img, (0, 0))
+    combined_image.paste(img2, (img.width, 0))
+    
+    combined_image.show()
+
+#function to overlay images
+def overlay_images():
+    
+    global img
+    if img is None:
+        messagebox.showerror("Error", "No image loaded to overlay!")
+        return
+    
+    # Load second image
+    file_path = filedialog.askopenfilename()
+    if not file_path:
+        return
+    
+    img2 = Image.open(file_path).convert("RGBA")
+    
+    # Resize second image to match the dimensions of the first image
+    img2 = img2.resize(img.size)
+    
+    # Overlay images
+    overlay_image = Image.blend(img.convert("RGBA"), img2,0.4)
+    overlay_image.show()
 
 # UI elements in the content frame
 
@@ -274,5 +320,21 @@ flip_vertical_label.pack()
 # Button to flip the image vertically
 flip_vertical_button = tk.Button(content_frame, text="Flip Vertical", command=flip_vertical)
 flip_vertical_button.pack(pady=10)
+
+# label to combine images
+combine_images_label = tk.Label(content_frame, text="Click to combine images side by side:")
+combine_images_label.pack()
+
+# Button to combine images side-by-side
+combine_side_by_side_button = tk.Button(content_frame, text="Combine Side-by-Side", command=combine_side_by_side)
+combine_side_by_side_button.pack(pady=10)
+
+# label to overlay images
+overlay_images_label = tk.Label(content_frame, text="Click to overlay:")
+overlay_images_label.pack()
+
+# Button to overlay images
+overlay_images_button = tk.Button(content_frame, text="Overlay Images", command=overlay_images)
+overlay_images_button.pack(pady=10)
 
 root.mainloop()
