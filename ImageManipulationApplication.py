@@ -5,12 +5,13 @@ import tkinter as tk
 from tkinter import filedialog, messagebox 
 # for working with images
 from PIL import Image, ImageTk
+
 # function to load an image
 def Load_Image():
     file_path = filedialog.askopenfilename()
     if file_path:
         img = Image.open(file_path)
-        img.show()  # Display the image in a separate window for now
+        img.show()  #displaying image in a separate window
 
 # function to save an image 
 def save_image():
@@ -29,4 +30,11 @@ heading_label.pack(pady=20)  # vertical padding
 browse_button = tk.Button(root, text="Browse", command=Load_Image)
 browse_button.pack()  
 
+# label for the dropdown
+format_label = tk.Label(root, text="Select format to save the image:")
+format_label.pack(pady=10)
+
+# dropdown for formats
+# the variable holds the selected format value
+format_var = tk.StringVar(value="jpg") # initial value is set to jpg
 root.mainloop()
