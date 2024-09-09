@@ -21,7 +21,7 @@ canvas.create_window((0, 0), window=content_frame, anchor="nw")
 canvas.configure(yscrollcommand=scrollbar.set)
 
 # Pack the Canvas and Scrollbar
-canvas.pack(side="left", fill="both", expand=True)
+canvas.pack(side="left", fill="both", expand=True,padx=450)
 scrollbar.pack(side="right", fill="y")
 
 # Update the Scrollregion whenever the content changes
@@ -141,6 +141,27 @@ def resize_image():
     except ValueError:
         messagebox.showerror("Error", "Invalid width or height!")
 
+# Function to flip the image horizontally
+def flip_horizontal():
+    global img
+    if img is None:
+        messagebox.showerror("Error", "No image loaded to flip!")
+        return
+
+    flipped_image = img.transpose(Image.FLIP_LEFT_RIGHT)
+    flipped_image.show()
+
+# Function to flip the image vertically
+def flip_vertical():
+    global img
+    if img is None:
+        messagebox.showerror("Error", "No image loaded to flip!")
+        return
+
+    flipped_image = img.transpose(Image.FLIP_TOP_BOTTOM)
+    flipped_image.show()
+
+
 # UI elements in the content frame
 
 # Heading for browsing
@@ -219,23 +240,39 @@ crop_button = tk.Button(content_frame, text="Crop Image", command=crop_image)
 crop_button.pack(pady=20)
 
 # Label for resizing
-resize_label = tk.Label(root, text="Resize Image (width, height):")
+resize_label = tk.Label(content_frame, text="Resize Image (width, height):")
 resize_label.pack(pady=10)
 
 # entry field for width
-width_label = tk.Label(root, text="Width:")
+width_label = tk.Label(content_frame, text="Width:")
 width_label.pack()
-width_entry = tk.Entry(root)
+width_entry = tk.Entry(content_frame)
 width_entry.pack()
 
 # entry field for height
-height_label = tk.Label(root, text="Height:")
+height_label = tk.Label(content_frame, text="Height:")
 height_label.pack()
-height_entry = tk.Entry(root)
+height_entry = tk.Entry(content_frame)
 height_entry.pack()
 
 # Resize button
-resize_button = tk.Button(root, text="Resize Image", command=resize_image)
+resize_button = tk.Button(content_frame, text="Resize Image", command=resize_image)
 resize_button.pack(pady=20)
+
+# label to flip horizontally
+flip_horizontal_label = tk.Label(content_frame, text="Click to Flip Horizontally:")
+flip_horizontal_label.pack()
+
+# Button to flip the image horizontally
+flip_horizontal_button = tk.Button(content_frame, text="Flip Horizontal", command=flip_horizontal)
+flip_horizontal_button.pack(pady=10)
+
+# label to flip vertically
+flip_vertical_label = tk.Label(content_frame, text="Click to Flip Vertically:")
+flip_vertical_label.pack()
+
+# Button to flip the image vertically
+flip_vertical_button = tk.Button(content_frame, text="Flip Vertical", command=flip_vertical)
+flip_vertical_button.pack(pady=10)
 
 root.mainloop()
