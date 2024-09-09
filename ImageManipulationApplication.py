@@ -20,10 +20,13 @@ root = tk.Tk()
 root.title("Image Manipulation Application")
 
 root.geometry("400x300")  #window size fixed
-root.resizable(False, False) # window resizing disabled
 
-# Add the browse button to load image
+# Heading for browsing
+heading_label = tk.Label(root, text="Click to browse the images", font=("Arial", 14))
+heading_label.pack(pady=20)  # vertical padding
+
+# Create the browse button
 browse_button = tk.Button(root, text="Browse", command=Load_Image)
-browse_button.pack()
+browse_button.pack()  
 
 root.mainloop()
