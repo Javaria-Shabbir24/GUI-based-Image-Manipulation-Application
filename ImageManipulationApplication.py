@@ -9,6 +9,7 @@ import os
 import io
 
 img = None #loaded image
+threshold = 128 #default threshold
 root = tk.Tk()
 root.title("Image Manipulation Application")
 root.geometry("400x300")  #window size fixed
@@ -74,6 +75,16 @@ def show_image_info():
     messagebox.showinfo("Image Info", info)
 
 
+# Function to convert grayscale image to black and white
+def convert_to_black_and_white():
+    global img
+    if img is None:
+        messagebox.showerror("Error", "No image loaded to convert!")
+        return
+
+    # Applying threshold to convert grayscale to black and white
+    bw_image = img.point(lambda p: 255 if p > threshold else 0) # if pixel value less than or equal to the threshold then mapped to  white else black
+    bw_image.show()  # Show the black and white image
 
 # Heading for browsing
 heading_label = tk.Label(root, text="Click to browse the images", font=("Arial", 14))
@@ -102,4 +113,23 @@ format_label.pack(pady=10)
 # Image Info button
 info_button = tk.Button(root, text="Image Info", command=show_image_info)
 info_button.pack(pady=20)  # Vertical padding
+
+# label for the conversion to black and white image
+format_label = tk.Label(root, text="Click to convert selected grayscale image to black and white:")
+format_label.pack(pady=10)
+
+# Slider to adjust threshold
+threshold_slider = tk.Scale(root, from_=0, to=255, orient=tk.HORIZONTAL, label="Threshold")
+threshold_slider.set(threshold)  # Set default value
+threshold_slider.pack(pady=10)
+
+def update_threshold(value):
+    global threshold
+    threshold = int(value)
+
+threshold_slider.bind("<Motion>", lambda event: update_threshold(threshold_slider.get()))
+
+convert_button = tk.Button(root, text="Convert to Black and White", command=convert_to_black_and_white)
+convert_button.pack(pady=20)
+
 root.mainloop()
