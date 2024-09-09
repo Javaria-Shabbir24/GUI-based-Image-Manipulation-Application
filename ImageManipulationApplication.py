@@ -8,7 +8,6 @@ threshold = 128  # default threshold
 
 root = tk.Tk()
 root.title("Image Manipulation Application")
-root.geometry("600x600")  # window size fixed
 
 # Create a Canvas and a vertical scrollbar
 canvas = tk.Canvas(root)
@@ -127,6 +126,20 @@ def crop_image():
     except ValueError:
         messagebox.showerror("Error", "Invalid crop coordinates!")
 
+# function to resize the image 
+def resize_image():
+    global img
+    if img is None:
+        messagebox.showerror("Error", "No image loaded to resize!")
+        return
+
+    try:
+        width = int(width_entry.get())
+        height = int(height_entry.get())
+        resized_image = img.resize((width, height))
+        resized_image.show()
+    except ValueError:
+        messagebox.showerror("Error", "Invalid width or height!")
 
 # UI elements in the content frame
 
@@ -204,5 +217,25 @@ bottom_entry.pack()
 # Crop button
 crop_button = tk.Button(content_frame, text="Crop Image", command=crop_image)
 crop_button.pack(pady=20)
+
+# Label for resizing
+resize_label = tk.Label(root, text="Resize Image (width, height):")
+resize_label.pack(pady=10)
+
+# entry field for width
+width_label = tk.Label(root, text="Width:")
+width_label.pack()
+width_entry = tk.Entry(root)
+width_entry.pack()
+
+# entry field for height
+height_label = tk.Label(root, text="Height:")
+height_label.pack()
+height_entry = tk.Entry(root)
+height_entry.pack()
+
+# Resize button
+resize_button = tk.Button(root, text="Resize Image", command=resize_image)
+resize_button.pack(pady=20)
 
 root.mainloop()
